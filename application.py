@@ -7,20 +7,17 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
-# Dict of channels (themselves dicts as well)
+# Dict of channels (each being lists of message dicts)
 channels = {
-    "general": [{
+    "General": [{
         "username": "attackfrog",
         "timestamp": 1532213192656,
-        "message": "This right here is a test message, know what I'm saying?"
+        "message": "Welcome to Chatterbox! Why don't you get the conversation started?"
     }]
 }
 
 # Set of users
-users = {
-    "testusername",
-    "jack"
-}
+users = { "0" }
 
 @app.route("/")
 def index():
@@ -33,4 +30,18 @@ def register(data):
     if username in users:
         emit("username taken", username)
     else:
+        users.add(username)
         emit("username registered", username)
+
+
+@socketio.on("get channels")
+def channel_list():
+    emit("channel list", list(channels.keys()))
+
+
+@socketio.on("get messages")
+def messages(channel):
+    if channels[channel]:
+        emit("old messages", channels[channel])
+    else:
+        emit("channel missing")
