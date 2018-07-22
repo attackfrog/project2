@@ -1,51 +1,51 @@
 .sidebar {
-  position: fixed;
-  top: 56px;
-  bottom: 0;
-  left: 0;
-  z-index: 100;
-  padding: 15px 20px 15px 15px;
-  box-shadow: inset -1px 0 5px rgba(0, 0, 0, .1);
+    position: fixed;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 15px 20px 15px 15px;
+    box-shadow: inset -1px 0 5px rgba(0, 0, 0, .1);
 }
 
 .sidebar * {
-  color: #343a40;
+    color: #343a40;
 }
 
 main {
-  margin: 56px 0 0 16.5%;
-  padding-top: 0.5rem;
-  padding-bottom: 2.5rem;
+    margin: 56px 0 0 16.5%;
+    padding-top: 0.5rem;
+    padding-bottom: 2.5rem;
 }
 
 #chat-box {
-  display: flex;
-  flex-direction: row;
-  position: fixed;
-  bottom: 0;
-  width: 81.5%;
-  padding: 0.5rem 0;
-  background-color: white;
+    display: flex;
+    flex-direction: row;
+    position: fixed;
+    bottom: 0;
+    width: 81.5%;
+    padding: 0.5rem 0;
+    background-color: white;
 }
 
 #chat-entry {
-  margin-right: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 .chat-message {
-  margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
 .chatter-name,
 .chatter-time {
-  font-size: 0.8em;
+    font-size: 0.8em;
 }
 
 .chatter-name {
-  color: #68747F;
-  margin-left: 0.2rem;
+    color: #68747F;
+    margin-left: 0.2rem;
 }
 
 .chatter-time {
-  color: #9CAFBF;
+    color: #9CAFBF;
 }
