@@ -38,11 +38,14 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarText">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Toggle Channels</a>
-                    </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Create New Channel</a>
+                        <a id="toggle-new-channels" class="nav-link" href="#">Create New Channel</a>
+                    </li>
+                    <li>
+                        <form id="new-channel" class="form-inline">
+                            <input class="form-control" type="text" placeholder="Channel Name" />
+                            <button class="btn btn-outline-primary" type="submit">Create</button>
+                        </form>
                     </li>
                 </ul>
                 <span class="navbar-text">
@@ -59,7 +62,7 @@
 
                 <main class="col-md-10">
                     <form id="chat-box">
-                        <input id="chat-entry" type="text" class="form-control" placeholder="Begin typing..." />
+                        <input id="chat-entry" type="text" class="form-control" placeholder="Begin typing..." autocomplete="off" />
                         <button type="submit" class="btn btn-primary">Chat</button>
                     </form>
                     <div id="messages"></div>

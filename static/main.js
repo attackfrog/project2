@@ -2,7 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultChannel = "General";
     
     setTimeout(scrollToBottom, 100); // something else was scrolling it back up again...
-
+    
+    // Compile Handlebars templates
+    const channelTemplate = Handlebars.compile(document.querySelector('#channel-template').innerHTML);
+    const messageTemplate = Handlebars.compile(document.querySelector('#message-template').innerHTML);
+    
     // Connect to websocket
     try {
         var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
@@ -10,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     catch (exception) {
         alert(`Failed to connect to websocket. (${exception})`);
     }
-
+    
     // "Register" the user
     socket.on('connect', () => {
         username = localStorage.getItem('username');
@@ -32,45 +36,74 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get channels and go to current/default channel
     socket.emit('get channels');
     socket.on('channel list', channelnames => {
-        const template = Handlebars.compile(document.querySelector('#channel-template').innerHTML);
         let channelList = document.querySelector('#channels');
-        channelList.innerHTML = template({'channels': channelnames});
+        channelList.innerHTML = channelTemplate({'channels': channelnames});
         
-        if (localStorage.getItem('channel') === null) {
-            localStorage.setItem('channel', defaultChannel);
-        }
-        highlightActiveChannel();
+        if (localStorage.getItem('channel') === null)
+            switchChannels(defaultChannel);
+        else
+            switchChannels(localStorage.getItem('channel'));
     });
     
-    // Get channel's messages
-    socket.emit('get messages', localStorage.getItem('channel'));
+    // If user somehow tried to enter an invalid channel, redirect to default
     socket.on('channel missing', () => {
-        localStorage.setItem('channel', defaultChannel);
-        socket.emit('get messages', localStorage.getItem('channel'));
+        switchChannels(defaultChannel);
     });
-    socket.on('old messages', messages => {
-        messages.sort((a, b) => {
+    
+    // Enter a channel and receive its archived messages
+    socket.on('enter channel', data => {
+        localStorage.setItem('channel', data.channel)
+        
+        data.messages.sort((a, b) => {
             return a.timestamp - b.timestamp;
         });
-        const template = Handlebars.compile(document.querySelector('#message-template').innerHTML);
         const messageBox = document.querySelector('#messages');
         messageBox.innerHTML = "";
         
-        for (var i in messages) {
-            const timestamp = new Date(messages[i].timestamp);
-            const time = timestamp.toLocaleTimeString();
-            const date = timestamp.toLocaleDateString();
-            messageBox.innerHTML += template({
-                'username': messages[i].username, 
-                'time': time,
-                'date': date,
-                'message': messages[i].message,
-            });
-        }
+        for (var i in data.messages)
+            messageBox.innerHTML += renderMessage(data.messages[i]);
+        
+        highlightActiveChannel();
+        scrollToBottom();
+    });
+    
+    // Receive new incoming messages
+    socket.on('new message', (message) => {
+        document.querySelector('#messages').innerHTML += renderMessage(message);
         scrollToBottom();
     });
 
+    
+    // Make "create new channel" button functional
+    document.querySelector('#toggle-new-channels').onclick = toggleNewChannelBox;
 
+    // Make "new channel" form functional
+    document.querySelector('#new-channel').onsubmit = () => {
+        const input = document.querySelector('#new-channel input');
+        if (input.value.length < 3)
+            alert('Channel names must be at least 3 characters.');
+        else {
+            socket.emit('new channel', input.value);
+            input.value = '';
+            toggleNewChannelBox();
+        }
+    };
+
+    // Make chat box functional
+    document.querySelector('#chat-box').onsubmit = () => {
+        const chatEntry = document.querySelector('#chat-entry');
+        if (chatEntry.value.length > 0) {
+            socket.emit('send message', {
+                'username': localStorage.getItem('username'),
+                'channel': localStorage.getItem('channel'),
+                'message': chatEntry.value
+            });
+            chatEntry.value = '';
+        }
+        return false;
+    }
+    
+    
     // Prompt user for a username and try to register it if it's a good one
     registerUser = message => {
         while (!localStorage.getItem('username')) {
@@ -92,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     highlightActiveChannel = () => {
         let activeChannel = localStorage.getItem('channel');
-        let channels = document.querySelector('#channels').querySelectorAll('a');
+        let channels = document.querySelectorAll('#channels a');
         for (let i = 0; i < channels.length; i++) {
             if (channels[i].innerText == activeChannel) {
                 channels[i].classList.add('active');
@@ -102,8 +135,40 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
+    
+    switchChannels = newChannel => {
+        const oldChannel = localStorage.getItem('channel');
+        // if user is just reentering their current channel, pass 0 as a falsy value for the old one
+        socket.emit('switch channel', {
+            'new': newChannel,
+            'old': (oldChannel == newChannel) ? 0 : oldChannel
+        });
+    };
+
+    renderMessage = message => {
+        const timestamp = new Date(message.timestamp);
+        const time = timestamp.toLocaleTimeString();
+        const date = timestamp.toLocaleDateString();
+        return messageTemplate({
+            'username': message.username, 
+            'time': time,
+            'date': date,
+            'message': message.message,
+        });
+    };
 });
 
 scrollToBottom = () => {
     window.scrollTo(0, document.body.scrollHeight);
+};
+
+toggleNewChannelBox = () => {
+    const form = document.querySelector('#new-channel');
+    if (form.style.display !== 'flex') {
+        form.style.display = 'flex';
+        form.querySelector('input').focus();
+    }
+    else
+        form.style.display = 'none';
+    return false;
 };

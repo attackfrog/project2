@@ -8,8 +8,18 @@
     box-shadow: inset -1px 0 5px rgba(0, 0, 0, .1);
 }
 
-.sidebar * {
+.sidebar a {
     color: #343a40;
+}
+
+#channels {
+    overflow-y: auto;
+    flex-wrap: nowrap;
+    height: 100%;
+}
+
+#channels::-webkit-scrollbar {
+    width: 0px;
 }
 
 main {
@@ -48,4 +58,13 @@ main {
 
 .chatter-time {
     color: #9CAFBF;
+}
+
+#new-channel {
+    margin-left: 1rem;
+    display: none;
+}
+
+#new-channel input {
+    margin-right: 0.5rem;
 }
