@@ -52,7 +52,7 @@ def join_channel(channel_update):
         leave_room(channel_update["old"])
     join_room(channel_update["new"])
     
-    if channels[channel_update["new"]]:
+    if channel_update["new"] in channels.keys():
         emit("enter channel", {
             "channel": channel_update["new"],
             "messages": channels[channel_update["new"]]

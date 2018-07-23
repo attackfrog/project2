@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
             registerUser('Please choose a username: ');
         else
             setUsername(username);
+        
+        if (localStorage.getItem('channel') === null)
+            switchChannels(defaultChannel);
+        else
+            switchChannels(localStorage.getItem('channel'));
     });
 
     socket.on('username taken', username => {
@@ -39,10 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let channelList = document.querySelector('#channels');
         channelList.innerHTML = channelTemplate({'channels': channelnames});
         
-        if (localStorage.getItem('channel') === null)
-            switchChannels(defaultChannel);
-        else
-            switchChannels(localStorage.getItem('channel'));
+        highlightActiveChannel();
+        activateChannelLinks();
     });
     
     // If user somehow tried to enter an invalid channel, redirect to default
@@ -54,17 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('enter channel', data => {
         localStorage.setItem('channel', data.channel)
         
-        data.messages.sort((a, b) => {
-            return a.timestamp - b.timestamp;
-        });
         const messageBox = document.querySelector('#messages');
         messageBox.innerHTML = "";
         
         for (var i in data.messages)
             messageBox.innerHTML += renderMessage(data.messages[i]);
         
-        highlightActiveChannel();
         scrollToBottom();
+        highlightActiveChannel();
+        activateChannelLinks();
     });
     
     // Receive new incoming messages
@@ -103,6 +104,22 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
     
+    // Make channel links functional
+    activateChannelLinks = () => {
+        document.querySelectorAll('#channels a').forEach(link => {
+            if (link.classList.contains('active')) {
+                link.onclick = () => { return false; };
+            }
+            else {
+                link.onclick = () => { 
+                    switchChannels(link.innerText);
+                    return false;
+                };
+                
+            }
+        });
+    };
+    
     
     // Prompt user for a username and try to register it if it's a good one
     registerUser = message => {
@@ -125,15 +142,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     highlightActiveChannel = () => {
         let activeChannel = localStorage.getItem('channel');
-        let channels = document.querySelectorAll('#channels a');
-        for (let i = 0; i < channels.length; i++) {
-            if (channels[i].innerText == activeChannel) {
-                channels[i].classList.add('active');
+        document.querySelectorAll('#channels a').forEach(link => {
+            if (link.innerText == activeChannel) {
+                link.classList.add('active');
             }
-            else if (channels[i].classList.contains('active')) {
-                channels[i].classList.remove('active');
+            else if (link.classList.contains('active')) {
+                link.classList.remove('active');
             }
-        }
+        })
     };
     
     switchChannels = newChannel => {
@@ -141,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // if user is just reentering their current channel, pass 0 as a falsy value for the old one
         socket.emit('switch channel', {
             'new': newChannel,
-            'old': (oldChannel == newChannel) ? 0 : oldChannel
+            'old': (oldChannel == newChannel || oldChannel === null) ? 0 : oldChannel
         });
     };
 
