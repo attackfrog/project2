@@ -36,6 +36,7 @@ def index():
     return render_template("index.html")
 
 
+# Register new user, or refuse if that username is taken
 @socketio.on("new user")
 def register(data):
     username = data["username"]
@@ -46,17 +47,20 @@ def register(data):
         emit("username registered", username)
 
 
+# Return list of channels
 @socketio.on("get channels")
 def channel_list():
     emit("channel list", list(channels.keys()))
 
 
+# Create new channel and broadcast channel list to all users
 @socketio.on("new channel")
 def new_channel(channel_name):
     channels[channel_name] = []
     emit("channel list", list(channels.keys()), broadcast=True)
 
 
+# Move user to new channel, leaving the old one if applicable
 @socketio.on("switch channel")
 def join_channel(channel_update):
     if channel_update["old"]:
@@ -72,6 +76,7 @@ def join_channel(channel_update):
         emit("channel missing")
 
 
+# Accept and relay new messages
 @socketio.on("send message")
 def message(message):
     if message["channel"] not in channels.keys():
@@ -94,6 +99,7 @@ def message(message):
             channels[message["channel"]].pop(0)
 
 
+# Query Wikipedia for summary information about user-requested topics
 def wiki_bot(query, channel):
     # strip "?wikipedia " from the query and convert spaces to underscores
     query = query.replace(" ", "_")[11:]

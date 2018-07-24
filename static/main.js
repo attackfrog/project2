@@ -132,15 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             else {
                 socket.emit('new user', {'username': username});
-                localStorage.setItem('username', username);
+                document.querySelector('#username').innerHTML = username;
             }
         }
     };
     
     setUsername = username => {
-        document.querySelector('#username').innerHTML = username;
+        localStorage.setItem('username', username);
     };
     
+    // Marks the current channel as active (for display), and removes that designation from any others
     highlightActiveChannel = () => {
         let activeChannel = localStorage.getItem('channel');
         document.querySelectorAll('#channels a').forEach(link => {
@@ -153,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     };
     
+    // Alert the server to switch the user to a new channel
     switchChannels = newChannel => {
         const oldChannel = localStorage.getItem('channel');
         // if user is just reentering their current channel, pass 0 as a falsy value for the old one
@@ -162,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // Renders a message as HTML to insert onto the page
     renderMessage = message => {
         const timestamp = new Date(message.timestamp);
         const time = timestamp.toLocaleTimeString();
@@ -179,6 +182,7 @@ scrollToBottom = () => {
     window.scrollTo(0, document.body.scrollHeight);
 };
 
+// Hides and shows the "create new channel" form
 toggleNewChannelBox = () => {
     const form = document.querySelector('#new-channel');
     if (form.style.display !== 'flex') {
