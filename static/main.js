@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.value = '';
             toggleNewChannelBox();
         }
+        return false;
     };
 
     // Make chat box functional
@@ -132,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             else {
                 socket.emit('new user', {'username': username});
-                document.querySelector('#username').innerHTML = username;
                 setUsername(username);
             }
         }
@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     setUsername = username => {
         localStorage.setItem('username', username);
+        document.querySelector('#username').innerHTML = username;
     };
     
     // Marks the current channel as active (for display), and removes that designation from any others
