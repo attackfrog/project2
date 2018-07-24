@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else {
                 socket.emit('new user', {'username': username});
                 document.querySelector('#username').innerHTML = username;
+                setUsername(username);
             }
         }
     };
