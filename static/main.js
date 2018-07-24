@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const defaultChannel = "General";
+    const minUsernameLength = 3;
     
     setTimeout(scrollToBottom, 100); // something else was scrolling it back up again...
     
@@ -125,8 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
     registerUser = message => {
         while (!localStorage.getItem('username')) {
             let username = prompt(message);
-            if (!username || username.length < 3) {
-                alert('Your username must be at least 3 characters.');
+            if (!username || username.length < minUsernameLength) {
+                alert(`Your username must be at least ${minUsernameLength} characters.`);
                 continue;
             }
             else {
